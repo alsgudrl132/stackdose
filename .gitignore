@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+# check.py 가 겹침 검사 중에 만드는 임시 파일
+hardware/cad/tmp*.scad
+hardware/cad/tmp*.stl
+.vscode/
+.env
