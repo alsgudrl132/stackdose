@@ -1,0 +1,120 @@
+/* 헬스장 계기판 느낌: 무채색 바탕 + 라임 포인트 하나. 가루 = 주황, 알약 = 하늘색. */
+:root {
+  --bg: #eeeeea;
+  --surface: #ffffff;
+  --surface-2: #f5f5f1;
+  --line: #deded8;
+  --line-strong: #bcbcb4;
+  --fg: #111211;
+  --muted: #5c5e59;
+  --accent: #c8f135; /* 채움용 (위에 검은 글자) */
+  --on-accent: #111211;
+  --accent-ink: #3d6600; /* 글자용 */
+  --powder: #e0691f;
+  --pill: #2a86cf;
+  --warn: #cf2d2d;
+  --focus: #111211;
+
+  /* 담는 중 패널: 기계 화면처럼 늘 어둡게 */
+  --run-bg: #111211;
+  --run-fg: #f1f1ec;
+  --run-muted: #9c9e98;
+  --run-line: #2a2b2a;
+  --run-track: #262726;
+  --run-accent: #d4ff3f;
+  --run-powder: #ff8a3d;
+  --run-pill: #6ec1ff;
+  --run-warn: #ff5a52;
+
+  --radius: 6px;
+  --font: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --display: 'Barlow Condensed', 'Pretendard Variable', Pretendard, 'Arial Narrow', sans-serif;
+
+  color-scheme: light dark;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-size-adjust: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c0d0d;
+    --surface: #161717;
+    --surface-2: #1c1d1d;
+    --line: #272928;
+    --line-strong: #3b3d3c;
+    --fg: #f1f1ec;
+    --muted: #9c9e98;
+    --accent: #d4ff3f;
+    --accent-ink: #d4ff3f;
+    --powder: #ff8a3d;
+    --pill: #6ec1ff;
+    --warn: #ff5a52;
+    --focus: #d4ff3f;
+
+    --run-bg: #161717;
+    --run-line: #2a2c2b;
+    --run-track: #262827;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+h1,
+h2,
+h3,
+p,
+fieldset {
+  margin: 0;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+legend {
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
