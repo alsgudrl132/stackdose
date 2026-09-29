@@ -9,6 +9,7 @@ hardware/cad/tmp*.stl
 # init_db.py 로 다시 만들 수 있는 DB 파일
 backend/*.db
 
-# 개인용 (Claude 작업 방식, 조회 스크립트)
+# 개인용 (Claude 작업 방식, 조회 스크립트, 공부 메모)
 CLAUDE.local.md
 tools/
+docs/python-자료구조.md

@@ -19,24 +19,24 @@ export const device = {
 //   { no: 8, supplement: null, kind: 'pill', remaining: 0 },
 // ]
 
-export const presets = [
-  {
-    no: 1,
-    name: "아침",
-    items: [
-      { slot: 1, amount: 5 },
-      { slot: 5, amount: 2 },
-    ],
-  },
-  {
-    no: 2,
-    name: "운동 후",
-    items: [
-      { slot: 1, amount: 5 },
-      { slot: 2, amount: 7 },
-    ],
-  },
-];
+// export const presets = [
+//   {
+//     no: 1,
+//     name: "아침",
+//     items: [
+//       { slot: 1, amount: 5 },
+//       { slot: 5, amount: 2 },
+//     ],
+//   },
+//   {
+//     no: 2,
+//     name: "운동 후",
+//     items: [
+//       { slot: 1, amount: 5 },
+//       { slot: 2, amount: 7 },
+//     ],
+//   },
+// ];
 
 // 배출 진행 화면 예시: '아침' 프리셋을 담는 중
 export const dispense = {

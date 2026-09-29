@@ -16,18 +16,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def fetch_all(sql, params=()):
+    try:
+        conn = sqlite3.connect('stackdose.db')
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        res = cur.execute(sql, params).fetchall()
+        return res
+    finally:
+        cur.close()
+        conn.close()
+
 @app.get("/")
 def root():
     return {"message" : "Hello World"}
 
 @app.get("/slots")
 def get_slots():
-    try:
-        conn = sqlite3.connect('stackdose.db')
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-        res = cur.execute("SELECT * FROM slots").fetchall()
-        return res
-    finally:
-        cur.close()
-        conn.close()
+    return fetch_all("SELECT * FROM slots")
+    
+
+@app.get("/presets")
+def get_presets():
+    res = fetch_all("""
+        SELECT A.no, A.name, B.slot, B.amount
+        FROM presets AS A
+        JOIN preset_items AS B ON A.no = B.preset
+    """)
+    presets = {}
+    for row in res:
+        no = row["no"]
+        if no not in presets:
+            presets[no] = {
+                "no": no,
+                "name": row["name"],
+                "items": [],
+            }
+        presets[no]["items"].append({
+            "slot": row["slot"],
+            "amount": row["amount"],
+        })
+    return list(presets.values())

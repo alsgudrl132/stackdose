@@ -1,5 +1,5 @@
 import "./App.css";
-import { device, presets, dispense } from "./data/mock";
+import { device, dispense } from "./data/mock";
 import { Mark } from "./components/Icons";
 import DeviceStatus from "./components/DeviceStatus";
 import SlotGrid from "./components/SlotGrid";
@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 
 export default function App() {
   const [slots, setSlots] = useState([]);
+  const [presets, setPresets] = useState([]);
 
   const getSlots = async () => {
     const res = await fetch("http://localhost:8000/slots");
@@ -17,8 +18,15 @@ export default function App() {
     setSlots(data);
   };
 
+  const getPresets = async () => {
+    const res = await fetch("http://localhost:8000/presets");
+    const data = await res.json();
+    setPresets(data);
+  };
+
   useEffect(() => {
     getSlots();
+    getPresets();
   }, []);
 
   return (
@@ -41,7 +49,7 @@ export default function App() {
         {/* 가끔 보는 것: 남은 양, 프리셋 고치기 */}
         <div className="layout__side">
           <SlotGrid slots={slots} />
-          <PresetEditor preset={presets[0]} slots={slots} />
+          {presets[0] && <PresetEditor preset={presets[0]} slots={slots} />}
         </div>
       </main>
     </div>
