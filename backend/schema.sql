@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS slots;
 DROP TABLE IF EXISTS presets;
 DROP TABLE IF EXISTS preset_items;
+DROP TABLE IF EXISTS dispenses;
 
 -- supplement 지금 이 칸에 넣어둔 보충제나 알약의 이름 예:크레아틴
 -- kind 종류 예:가루 또는 알약
@@ -75,3 +76,11 @@ INSERT INTO preset_items VALUES (
 INSERT INTO preset_items VALUES (
     1,5,2
 );
+
+CREATE TABLE IF NOT EXISTS dispenses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    preset INTEGER,
+    status TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(preset) REFERENCES presets(no)
+)

@@ -2,6 +2,14 @@ import { unit } from "../format";
 import { PlusIcon, ArrowIcon } from "./Icons";
 
 function PresetCard({ preset, slots }) {
+  const postDispense = async (no) => {
+    const res = await fetch(`http://localhost:8000/presets/${no}/dispense`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    console.log(data);
+  };
+
   return (
     <li className="stack">
       <div className="stack__body">
@@ -28,7 +36,11 @@ function PresetCard({ preset, slots }) {
       </div>
 
       <div className="stack__actions">
-        <button className="btn btn--go" type="button">
+        <button
+          className="btn btn--go"
+          type="button"
+          onClick={() => postDispense(preset.no)}
+        >
           담기
           <ArrowIcon />
         </button>

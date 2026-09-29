@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 
@@ -57,3 +57,19 @@ def get_presets():
             "amount": row["amount"],
         })
     return list(presets.values())
+
+@app.post("/presets/{no}/dispense")
+def dispense_preset(no:int):
+    try:
+        conn = sqlite3.connect('stackdose.db')
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        res = cur.execute('''SELECT no FROM presets WHERE no = (?)''',(no,)).fetchall()
+        if not res:
+            raise HTTPException(status_code=404, detail=f"Preset {no} not found")
+        cur.execute('''INSERT INTO dispenses (preset, status) VALUES(?, ?)''', (no, "requested"))
+        conn.commit()
+        return {"ok" : True, "id": cur.lastrowid, "preset" : no}
+    finally:
+        cur.close()
+        conn.close()
