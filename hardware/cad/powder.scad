@@ -17,19 +17,19 @@ include <lib.scad>
 part = "block";   // "block" | "top" | "strap" | "hopper" | "auger" | "module"
 
 // ---- 관과 스크류 ----
-auger_od    = 15;
+tube_id     = 16;     // 관 구멍은 고정. 틈을 바꿀 땐 스크류만 다시 뽑음 (block·top 그대로)
+auger_od    = tube_id - 2*auger_gap;
 auger_core  = 6;
 auger_pitch = 40;     // 크게 잡아야 세워서 출력할 때 날개 아래가 덜 처짐
 auger_blade = 3.0;    // 날개 두께 (끝단 강도)
-tube_id     = auger_od + 2*0.5;   // 반지름 틈 0.5 — 멈춘 뒤 가루가 새어 나오는 것 줄임
 tube_od     = tube_id + 2*3;
 axis_h      = 24;     // 상판 윗면 → 축
 core_hw     = 12;     // 아래 블록 몸통 반폭
 rail_hw     = 20.5;   // 나사 레일 바깥쪽
 rail_t      = 6.5;    // 너트 홈 위 지붕 2.8mm 확보 (아래는 45° 받침)
 flange_t    = 4;
-endcap_t    = 3;
-L_in        = 82;
+endcap_t    = 3.8;    // 끝 핀 구멍(2.5) 앞 벽 1.3mm
+L_in        = 81.2;   // endcap_t 를 늘린 만큼 줄여 전체 길이 L(85) 유지
 L           = endcap_t + L_in;   // 관 끝 = 모터 감속기 앞면
 narrow      = 16;     // 출구 쪽은 레일 없이 좁게 (네 모듈이 컵 위에서 모이도록)
 outlet_w    = 13;
@@ -41,6 +41,7 @@ collar_od   = 33;     // 호퍼 슬리브가 씌워지는 지름
 collar_wall = 2;
 collar_h    = 15;
 shoulder_d  = 41;     // 칼라 아래 턱 (호퍼가 얹힘)
+powder_shoulder_t = 2;  // 턱 두께 (호퍼 높이 계산에도 씀)
 screw_y     = [25, 78];
 screw_x     = (core_hw + rail_hw) / 2;
 wing_x      = 25;     // 앞 날개 볼트 (레일 밖이라 위에서 드라이버가 들어감)
@@ -56,13 +57,16 @@ strap_w   = 3;
 strap_x   = gear_fit + strap_w + 3.7;
 strap_y   = L + sad_len/2;
 z_split   = axis_h - split_dz;
+powder_bolt_len = 12;   // 띠 볼트 M3x12
+powder_nut_drop = 8;    // 받침 윗면 → 너트 주머니 아랫면
 
 // ---- 스크류 길이 ----
 hub_d       = 12;
-hub_hole    = jga_shaft_len - jga_boss_h - 0.5 + 1.5;   // 축보다 1.5mm 깊게
+powder_hub_gap = 0.5;   // 스크류 허브 끝 ↔ 모터 돌기 틈
+hub_hole    = jga_shaft_len - jga_boss_h - powder_hub_gap + 1.5;   // 축보다 1.5mm 깊게
 hub_len     = hub_hole + 1;
 tip_len     = tip_hole_d - 0.5;
-auger_y_end = L - jga_boss_h - 0.5;
+auger_y_end = L - jga_boss_h - powder_hub_gap;
 flight_len  = auger_y_end - hub_len - (endcap_t + 0.5);
 
 // ---- 호퍼 ----
@@ -78,9 +82,10 @@ function powder_deck_holes() = [[-wing_x, narrow + 5], [wing_x, narrow + 5]];   
 pin_at = [[-screw_x, screw_y[0]], [screw_x, screw_y[1]]];                              // 위·아래 관 맞춤 핀 2개 (대각선)
 function powder_collar_y() = collar_y;
 function powder_collar_top() = axis_h + tube_od/2 + collar_h;
-function powder_hopper_top() = axis_h + tube_od/2 + 2 + hop_sleeve_h + hop_cone_h + hop_flange_t;
+function powder_hopper_top() = axis_h + tube_od/2 + powder_shoulder_t + hop_sleeve_h + hop_cone_h + hop_flange_t;
 function powder_outlet_rect() = [-outlet_w/2, outlet_w/2, endcap_t, endcap_t + outlet_len];
 function powder_motor_rear_y() = L + jga_len;
+function powder_tube_id() = tube_id;        // 쿠폰 고리가 실제 관과 같게
 
 module bore(y0, y1, d, zc = axis_h) {
     translate([0, y0, zc]) rotate([-90, 0, 0]) cylinder(d = d, h = y1 - y0);
@@ -111,8 +116,8 @@ module powder_block() intersection() {
         translate([-outlet_w/2, endcap_t, -1]) cube([outlet_w, outlet_len, axis_h + 1]);
         for (p = pin_at) translate([p[0], p[1], axis_h - 3.5]) cylinder(d = pin_hole, h = 4);   // 막힌 핀 구멍
         for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) {
-            translate([strap_x, strap_y, z_split - 12]) cylinder(d = m3_hole, h = 13);
-            translate([strap_x, strap_y, z_split - 8]) m3_nut_slot(sad_hw - strap_x + 1);
+            translate([strap_x, strap_y, z_split - powder_bolt_len]) cylinder(d = m3_hole, h = powder_bolt_len + 1);
+            translate([strap_x, strap_y, z_split - powder_nut_drop]) m3_nut_slot(sad_hw - strap_x + 1);
         }
         for (p = powder_deck_holes()) translate([p[0], p[1], -1]) cylinder(d = pin_hole, h = 6);
     }
@@ -130,7 +135,7 @@ module powder_top() {
             // 호퍼가 얹히는 턱 (아래는 45° 경사 → 서포트 없음)
             translate([0, collar_y, axis_h + tube_od/2 - (shoulder_d - collar_od)/2]) {
                 cylinder(d1 = collar_od, d2 = shoulder_d, h = (shoulder_d - collar_od)/2);
-                translate([0, 0, (shoulder_d - collar_od)/2 - 0.01]) cylinder(d = shoulder_d, h = 2);
+                translate([0, 0, (shoulder_d - collar_od)/2 - 0.01]) cylinder(d = shoulder_d, h = powder_shoulder_t);
             }
         }
         translate([0, endcap_t, axis_h]) rotate([-90, 0, 0])
@@ -158,7 +163,7 @@ module powder_strap() {
 
 // 호퍼 (조립 위치로 모델링): 칼라에 씌우는 슬리브 → 60° 깔때기 → 가루통 받침 테두리
 module powder_hopper() {
-    z0 = axis_h + tube_od/2 + 2;     // 턱 위
+    z0 = axis_h + tube_od/2 + powder_shoulder_t;     // 턱 위
     translate([0, collar_y, z0]) difference() {
         union() {
             cylinder(d = collar_od + 2*clear + 2*hop_wall, h = hop_sleeve_h);
@@ -172,22 +177,22 @@ module powder_hopper() {
 }
 
 // 스크류: 출력 방향(모터 쪽이 아래)으로 만듦. z=0 이 모터 쪽 끝. 1줄 나선.
-module auger() {
+module auger(od = auger_od) {      // od: 쿠폰에서 틈별 조각을 만들 때만 바꿈
     difference() {
         union() {
             cylinder(d = hub_d, h = hub_len);
             translate([0, 0, hub_len - 0.01]) {
                 cylinder(d = auger_core, h = flight_len + 0.5 + 0.02);
                 intersection() {
-                    cylinder(d = auger_od, h = flight_len);
+                    cylinder(d = od, h = flight_len);
                     linear_extrude(height = flight_len, twist = 360 * flight_len / auger_pitch,
                                    slices = ceil(flight_len * 2))
-                        translate([0, -auger_blade/2]) square([auger_od/2 + 1, auger_blade]);
+                        translate([0, -auger_blade/2]) square([od/2 + 1, auger_blade]);
                 }
             }
             translate([0, 0, hub_len + flight_len + 0.5]) cylinder(d = tip_d, h = tip_len);
         }
-        translate([0, 0, -0.01]) linear_extrude(hub_hole) dshaft_jga2d(clear / 2);
+        translate([0, 0, -0.01]) linear_extrude(hub_hole) dshaft_jga2d(jga_d_clear);
     }
 }
 
@@ -214,7 +219,7 @@ module powder_module() {
     %jga_ghost();
 }
 
-hz0 = axis_h + tube_od/2 + 2;
+hz0 = axis_h + tube_od/2 + powder_shoulder_t;
 if      (part == "block")  powder_block();
 else if (part == "top")    powder_top();
 else if (part == "strap")  translate([0, 0, L + sad_len - 2]) rotate([-90, 0, 0]) translate([0, 0, -z_split]) powder_strap();

@@ -6,7 +6,7 @@
 // 3줄: 28BYJ-48 축 D구멍 → 같은 기준 (알약 원판 허브)
 // 4줄: M3 구멍 3.2~3.6 → 나사가 "힘 없이 지나가는" 가장 작은 칸 = m3_hole
 // 5줄: M3 너트 주머니 5.6~6.0 → 너트가 "눌러야 들어가고 안 빠지는" 칸 = m3_nut_af
-// 오른쪽: 스크류 20mm 조각 + 관 고리 → 날개가 처지지 않는지, 관 안에서 도는지
+// 오른쪽: 관 고리 1개 + 틈별 스크류 조각 5개(G줄) → 걸림 없이 도는 가장 좁은 칸 + 한 칸 = auger_gap
 // =====================================================================
 include <config.scad>
 include <lib.scad>
@@ -37,12 +37,21 @@ difference() {
 }
 // 끼워 볼 8mm 핀
 translate([-8, 8, 0]) cylinder(d = 8, h = 10);
-// 스크류 조각과 관 고리 (실제 치수와 같음)
-translate([len(cs) * pitch + 26, 14, 0]) intersection() {
-    auger();
-    translate([-10, -10, 0]) cube([20, 20, 30.5]);
+// G줄: 틈별 스크류 조각 5개 (관 16 고정, 스크류 지름만 다름). 번호표 5~1 = 틈 0.5~0.1
+// 고리(아래)에 끼워 끝까지 걸림 없이 도는 것 중 가장 좁은 칸 → auger_gap 은 그보다 한 칸 넓게
+gaps = [0.5, 0.4, 0.3, 0.2, 0.1];
+for (i = [0 : len(gaps) - 1]) translate([len(cs) * pitch + 52, 14 + i * 26, 0]) {
+    intersection() {
+        auger(powder_tube_id() - 2*gaps[i]);
+        translate([-10, -10, 0]) cube([20, 20, 30.5]);
+    }
+    difference() {
+        translate([5, -4, 0]) cube([12, 8, 1.6]);
+        translate([12, 0, 0.8]) linear_extrude(1) text(str(round(gaps[i] * 10)), size = 4.5, halign = "center", valign = "center");
+    }
 }
+// 관 고리 (실제 관 안지름과 같음)
 translate([len(cs) * pitch + 26, 44, 0]) difference() {
-    cylinder(d = 15 + 2*0.8 + 2*2.4, h = 12);
-    translate([0, 0, -1]) cylinder(d = 15 + 2*0.8, h = 14);
+    cylinder(d = powder_tube_id() + 2*2.4, h = 12);
+    translate([0, 0, -1]) cylinder(d = powder_tube_id(), h = 14);
 }

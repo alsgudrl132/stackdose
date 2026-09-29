@@ -75,7 +75,7 @@ CLASH = (
 
 # 일부러 겹치게 만든 쌍: 이 부피(mm3)까지는 정상
 #   motor × powder: 모터 덮개 띠가 감속기를 약 0.3mm 눌러 잡음 (squeeze)
-ALLOW = {**{(f"motor{i}", f"powder{i}"): 250 for i in Q}}
+ALLOW = {**{(f"motor{i}", f"powder{i}"): 100 for i in Q}}   # 실제 띠 조임 76mm3. 넉넉히 두면 새 겹침을 숨김
 
 
 def run(args, timeout=1800):
@@ -131,7 +131,7 @@ def check_parts():
         fits = fit_xy and size[2] <= BED[2]
         flag = "OK " if fits and not warns else ("경고" if fits else "크기초과")
         if not fits or warns:
-            ok = ok and fits
+            ok = False      # 경고(떨어진 덩어리 등)도 실패로 봄
         print(f"[{flag}] {name:18s} {size[0]:6.1f} x {size[1]:6.1f} x {size[2]:6.1f} mm  부피 {vol/1000:6.1f} cm3")
         for w in warns:
             print("       ", w.strip())

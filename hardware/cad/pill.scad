@@ -35,9 +35,10 @@ gap_top  = 1.5;                    // 원판 위 ↔ 덮개 (둘째 알약은 7m
 well_h   = disk_t + gap_bot + gap_top;
 well_d   = disk_d + 2;
 cover_d  = well_d + 2.4;
-rim_h    = 2;
-rim_w    = 1.6;
-base_d   = cover_d + 2*clear + 2*rim_w;
+pill_rim_h = 2;                    // 덮개 턱 테두리 (config 의 상판 rim_h 와 다른 값)
+pill_rim_w = 1.6;
+pill_mag_fit = 0.3;                // 자석 자리 지름 여유 (자석 오면 쿠폰 C줄 1·2번에 넣어 보고 조정)
+base_d   = cover_d + 2*clear + 2*pill_rim_w;
 skirt_w  = 2.4;
 cover_t  = 2;
 hopper_h = 70;                     // ★ 한 달 치가 들어가는지 확인
@@ -113,11 +114,11 @@ module lip_ring(g) {
 module pill_floor() {
     difference() {
         union() {
-            translate([0, 0, z_floor]) cylinder(d = base_d, h = floor_t + well_h + rim_h);
+            translate([0, 0, z_floor]) cylinder(d = base_d, h = floor_t + well_h + pill_rim_h);
         }
         translate([0, 0, z_floor - 0.01]) lip_ring(clear);                                  // 치마 턱이 들어가는 홈
         translate([0, 0, z_well]) cylinder(d = well_d, h = well_h + 1);
-        translate([0, 0, z_ledge]) cylinder(d = cover_d + 2*clear, h = rim_h + 1);
+        translate([0, 0, z_ledge]) cylinder(d = cover_d + 2*clear, h = pill_rim_h + 1);
         translate([0, 0, z_floor - 1]) cylinder(d = hub_d + 2*clear, h = floor_t + 2);
         translate([0, 0, z_floor - 1]) linear_extrude(floor_t + 2) out_slot2d();
         // 모터 귀: 관통 구멍 + 윗면(우물 쪽) 너트 주머니 → 아래에서 M3x5 로 조임
@@ -131,7 +132,7 @@ module pill_floor() {
             translate([-(hall_l + 0.6)/2, -(hall_w + 0.6)/2, 0]) cube([hall_l + 0.6, hall_w + 0.6, floor_t - 1.2]);
             translate([0, -3.5, 0]) cube([lip_r0 - mag_r - 1, 7, 1.8]);
         }
-        translate([cover_d/2 - 1, -key_w/2, z_ledge]) cube([rim_w + clear + 2, key_w, rim_h + 1]);
+        translate([cover_d/2 - 1, -key_w/2, z_ledge]) cube([pill_rim_w + clear + 2, key_w, pill_rim_h + 1]);
     }
 }
 
@@ -151,9 +152,9 @@ module pill_disk() {
         }
         // 축: 아래는 둥근 구멍, D컷 구간만 D자
         translate([0, 0, -hub_down - 1]) cylinder(d = byj_shaft_d + 2*clear, h = hub_down + 1 + d_from);
-        translate([0, 0, d_from]) linear_extrude(disk_t + hub_down) dshaft_byj2d(clear / 2);
+        translate([0, 0, d_from]) linear_extrude(disk_t + hub_down) dshaft_byj2d(byj_d_clear);
         // 원점 자석 (칸 사이, 아랫면에 박음)
-        rotate(mag_a - rest_a) translate([mag_r, 0, -0.01]) cylinder(d = mag_d + 0.3, h = mag_t + 0.2);
+        rotate(mag_a - rest_a) translate([mag_r, 0, -0.01]) cylinder(d = mag_d + pill_mag_fit, h = mag_t + 0.2);
     }
 }
 
@@ -163,7 +164,7 @@ module pill_cover() {
     difference() {
         union() {
             cylinder(d = cover_d, h = cover_t);
-            translate([cover_d/2 - 1, -(key_w - 2*clear)/2, 0]) cube([rim_w + 1, key_w - 2*clear, cover_t]);
+            translate([cover_d/2 - 1, -(key_w - 2*clear)/2, 0]) cube([pill_rim_w + 1, key_w - 2*clear, cover_t]);
             difference() {
                 cylinder(d = well_d, h = cover_t + hopper_h);
                 translate([0, 0, -1]) cylinder(d = well_d - 4, h = cover_t + hopper_h + 2);
