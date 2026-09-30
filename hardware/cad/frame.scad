@@ -15,7 +15,7 @@ use <pill.scad>
 use <scale.scad>
 use <electronics.scad>
 
-part = "baseP";   // "baseP" | "deckP" | "baseL" | "deckL" | "post" | "pins"
+part = "baseP";   // "baseP" | "deckP" | "baseL" | "deckL" | "post" | "pins" | "pegtest"
 
 motor_wire_r = 128;   // 가루 모터 전선 구멍 (컵 중심에서 대각선 거리, 모터 몸통 아래)
 peg_off = -post_w/2 + peg_w/2;   // 돌기는 기둥 한쪽 면에 붙어 있음 (눕혀서 출력할 때 바닥에 닿게)
@@ -101,9 +101,18 @@ module deckL() difference() {
 // 핀: 한 판에 모아서 출력 (가루 4×(상판 2 + 관 2) + 알약 4×2 + 저울 2 = 26개, 여분 4)
 module pins() for (i = [0:29]) translate([(i % 6) * 8, floor(i / 6) * 8, 0]) cylinder(d = pin_d, h = pin_len);
 
+// 기둥 돌기 시험 조각: 큰 판을 뽑기 전에 기둥 돌기가 판 구멍에 맞는지 확인.
+// 구멍은 바닥판·상판과 같은 peg_holes() 로 뚫음 (숫자를 따로 적지 않음)
+frame_pegtest_w = 18;
+module pegtest() difference() {
+    translate([-frame_pegtest_w/2, -frame_pegtest_w/2, 0]) cube([frame_pegtest_w, frame_pegtest_w, base_t]);
+    peg_holes([[-peg_off, 0]], 0, base_t);
+}
+
 if      (part == "baseP") baseP();
 else if (part == "baseL") baseL();
 else if (part == "deckP") translate([0, 0, deck_top]) rotate([180, 0, 0]) deckP();   // 뒤집어 출력
 else if (part == "deckL") translate([0, 0, deck_top]) rotate([180, 0, 0]) deckL();
 else if (part == "post")  translate([0, 0, post_w/2]) rotate([0, -90, 0]) post();      // 눕혀서 출력 (돌기가 바닥 쪽)
 else if (part == "pins")  pins();
+else if (part == "pegtest") pegtest();

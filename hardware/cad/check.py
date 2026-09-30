@@ -28,6 +28,7 @@ PARTS = [
     ("electronics.scad", "ctrl", "ctrl_plate"),
     ("frame.scad", "post", "post"),
     ("frame.scad", "pins", "pins"),
+    ("frame.scad", "pegtest", "pegtest"),
     ("frame.scad", "baseP", "base_powder"),
     ("frame.scad", "deckP", "deck_powder"),
     ("frame.scad", "baseL", "base_pill"),
