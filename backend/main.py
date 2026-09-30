@@ -76,7 +76,33 @@ def dispense_preset(no:int):
 
 @app.get("/dispenses/{id}")
 def dispense_status(id:int):
-        res = fetch_all("SELECT * FROM dispenses WHERE id = (?)", (id,))
-        if res == []:
-            raise HTTPException(404, detail=f"Id {id} not found")
-        return res[0]
+    res = fetch_all("SELECT * FROM dispenses WHERE id = (?)", (id,))
+    if res == []:
+        raise HTTPException(404, detail=f"Id {id} not found")
+    return res[0]
+
+@app.get("/device/next")
+def get_next_job():
+    res = fetch_all("SELECT * FROM dispenses WHERE status = 'requested' ORDER BY id LIMIT 1")
+    if res == []:
+        return None
+    return res[0]
+
+@app.post("/dispenses/{id}/start")
+def dispense_start(id:int):
+    res = fetch_all("SELECT status FROM dispenses WHERE id = (?)", (id,))
+    if res == []:
+        raise HTTPException(404, detail=f"Id {id} not found")
+    if res[0]["status"] != "requested":
+        raise HTTPException(409, detail="Status is not requested")
+    try:
+        conn = sqlite3.connect('stackdose.db')
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute("UPDATE dispenses SET status = 'running' WHERE id = (?) AND status = 'requested'", (id,))
+        if cur.rowcount == 0:
+            raise HTTPException(409, detail="Now running")
+        conn.commit()
+    finally:
+        cur.close()
+        conn.close()
