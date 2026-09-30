@@ -73,3 +73,10 @@ def dispense_preset(no:int):
     finally:
         cur.close()
         conn.close()
+
+@app.get("/dispenses/{id}")
+def dispense_status(id:int):
+        res = fetch_all("SELECT * FROM dispenses WHERE id = (?)", (id,))
+        if res == []:
+            raise HTTPException(404, detail=f"Id {id} not found")
+        return res[0]
