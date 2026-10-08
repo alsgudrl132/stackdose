@@ -21,6 +21,7 @@ PARTS = [
     ("pill.scad", "skirt", "pill_skirt"),
     ("pill.scad", "floor", "pill_floor"),
     ("pill.scad", "disk", "pill_disk"),
+    ("pill.scad", "spacer", "pill_spacer"),
     ("pill.scad", "cover", "pill_cover"),
     ("scale.scad", "pedestal", "scale_pedestal"),
     ("scale.scad", "tray", "scale_tray"),
@@ -53,6 +54,7 @@ CLASH = (
     + [(f"pill{i}", f"pill{j}") for i in Q for j in Q if i < j]
     + [(f"pilltop{i}", f"pilltop{j}") for i in Q for j in Q if i < j]
     + [(f"disk{i}", f"pill{i}") for i in Q] + [(f"disk{i}", f"pilltop{i}") for i in Q]
+    + [(f"pspacer{i}", f"pill{i}") for i in Q] + [(f"pspacer{i}", f"disk{i}") for i in Q] + [(f"pspacer{i}", f"byj{i}") for i in Q]
     + [(f"byj{i}", f"pill{i}") for i in Q] + [(f"byj{i}", f"disk{i}") for i in Q]
     + [(f"byj{i}", "deckL") for i in Q] + [(f"pilltop{i}", f"pill{i}") for i in Q]
     + [(f"pill{i}", "deckL") for i in Q]

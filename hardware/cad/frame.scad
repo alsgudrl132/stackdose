@@ -18,6 +18,8 @@ use <electronics.scad>
 part = "baseP";   // "baseP" | "deckP" | "baseL" | "deckL" | "post" | "pins" | "pegtest"
 
 motor_wire_r = 128;   // 가루 모터 전선 구멍 (컵 중심에서 대각선 거리, 모터 몸통 아래)
+frame_wire_hole = [20, 12];   // 알약 상판 전선 구멍: 28BYJ 커넥터가 꽂힌 채 통과 (+홀 센서 선)
+assert(frame_wire_hole[0] >= byj_conn_w + 2 && frame_wire_hole[1] >= byj_conn_t + 2, "알약 상판 전선 구멍이 28BYJ 커넥터보다 작음");
 peg_off = -post_w/2 + peg_w/2;   // 돌기는 기둥 한쪽 면에 붙어 있음 (눕혀서 출력할 때 바닥에 닿게)
 
 // 기둥: 조립 위치로 모델링 (z 0 ~ deck_z)
@@ -93,8 +95,8 @@ module deckL() difference() {
     peg_holes(postsL, deck_z, deck_t);
     pin_holes([for (i = [0:3], p = pill_deck_holes()) pill_xy(p, i)], deck_top);
     translate([0, 0, deck_z - 1]) linear_extrude(deck_t + 2) for (i = [0:3]) {
-        // 전선 구멍: 28BYJ-48 커넥터(약 12.5×6)가 꽂힌 채로 + 홀 센서 선 3가닥
-        translate(pill_xy(pill_wire_xy(), i)) rotate(pill_phi[i] + 90) square([20, 12], center = true);
+        // 전선 구멍: 28BYJ-48 커넥터(실측 15×5.5)가 꽂힌 채로 + 홀 센서 선 3가닥
+        translate(pill_xy(pill_wire_xy(), i)) rotate(pill_phi[i] + 90) square(frame_wire_hole, center = true);
     }
 }
 

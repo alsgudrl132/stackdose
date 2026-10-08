@@ -40,6 +40,7 @@ module piece(name) {
                                            rotate(-(powder_a[i] - 90)) translate([-bin_w/2, -bin_w/2, 0]) cube([bin_w, bin_w, bin_h]);
         if (name == str("pill", i))    at_pill(i) { pill_skirt(); pill_floor(); }
         if (name == str("disk", i))    at_pill(i) translate([0, 0, pill_disk_z()]) rotate(pill_rest_a()) pill_disk();
+        if (name == str("pspacer", i)) at_pill(i) translate([0, 0, pill_well_z()]) pill_spacer();
         if (name == str("hall", i))    at_pill(i) hall_ghost();
         if (name == str("pilltop", i)) at_pill(i) translate([0, 0, pill_ledge_z()]) pill_cover();
         if (name == str("byj", i))     at_pill(i) byj_ghost(pill_rest_a());
@@ -64,6 +65,7 @@ if (show == "all") {
         color("Peru") piece(str("auger", i));
         color("SteelBlue") piece(str("pill", i));
         color("Gold") piece(str("disk", i));
+        color("Orange") piece(str("pspacer", i));
         color("White", 0.5) piece(str("pilltop", i));
         %piece(str("motor", i)); %piece(str("byj", i)); %piece(str("bin", i)); %piece(str("hall", i));
     }
