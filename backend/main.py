@@ -135,7 +135,7 @@ def dispense_finish(id:int):
     if res == []:
         raise HTTPException(404, detail=f"Id {id} not found")
     if res[0]["status"] != "running":   # 진행 중인 요청만 끝낼 수 있음
-        raise HTTPException(409, detail="Status is not requested")
+        raise HTTPException(409, detail="Status is not running")
     try:
         conn = sqlite3.connect('stackdose.db')
         conn.row_factory = sqlite3.Row
