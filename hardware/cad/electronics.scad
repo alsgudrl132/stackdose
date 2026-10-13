@@ -61,6 +61,7 @@ module esp_cradle() {      // 짧은 두 끝만 받침, 긴 두 변은 열림 �
         translate([-L/2 - wall, s > 0 ? W/2 - 3 : -W/2 - wall, 0]) cube([L + 2*wall, 3 + wall, esp_h + esp_t + 2]);
         translate([-L/2 - clear, -W/2 - clear, esp_h]) cube([L + 2*clear, W + 2*clear, 10]);
         if (s > 0) translate([-6, W/2 - 5, esp_h - 2]) cube([12, 10, 10]);    // USB 자리
+        if (s < 0) translate([-10, -W/2 - esp_ant - 1, esp_h + esp_t]) cube([20, esp_ant + 2, 10]);   // 안테나 자리 (기판 윗면 위로 튀어나옴)
     }
 }
 
