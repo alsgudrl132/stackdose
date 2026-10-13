@@ -13,3 +13,6 @@ backend/*.db
 CLAUDE.local.md
 tools/
 docs/python-자료구조.md
+
+# Wi-Fi 이름·비밀번호 (펌웨어)
+firmware/stackdose/main/wifi_secret.h
