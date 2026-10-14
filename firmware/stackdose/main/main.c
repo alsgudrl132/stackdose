@@ -19,6 +19,8 @@
 #include "wifi_secret.h"
 #include "freertos/event_groups.h"
 #include "esp_http_client.h"
+#include <string.h>
+#include <stdbool.h>
 
 static EventGroupHandle_t s_wifi_events;
 
@@ -55,6 +57,25 @@ static int http_request(esp_http_client_method_t method, const char* url, char* 
     esp_http_client_close(client);
     esp_http_client_cleanup(client);
     return status;
+}
+
+static bool json_get(const char* json, const char* key, char* out, int out_len) {
+    char* key_ptr;
+    key_ptr = strstr(json, key);
+    if(key_ptr != NULL) {
+        char* val_start  = key_ptr + strlen(key)+3;
+        char* val_end = strchr(val_start , '"');
+        if(val_end != NULL) {
+            int status_len = val_end - val_start;
+            if(status_len < out_len) {
+                memcpy(out, val_start , status_len);
+                out[status_len] = '\0';
+                printf("out = %s\n", out);
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 
@@ -97,11 +118,18 @@ void app_main(void)
 
     printf("Wifi ready\n");
 
-    esp_http_client_config_t config = { .url = "http://"WIFI_IP":8000/device/next"};
-    esp_http_client_handle_t client = esp_http_client_init(&config);
-    esp_http_client_perform(client);
-    printf("status = %d\n",esp_http_client_get_status_code(client));
-    esp_http_client_cleanup(client);
+    char body[256];
+    int http_code;
+
+    http_code = http_request(HTTP_METHOD_GET, "http://"WIFI_IP":8000/device/next", body, sizeof(body));
+
+    printf("http_code code = %d\n", http_code);
+    printf("body = %s\n", body);
+
+    char status_buf[32];
+    if(json_get(body, "status", status_buf, sizeof(status_buf))){
+        printf("status_buf %s\n", status_buf);
+    }
 
     while (1)
     {
