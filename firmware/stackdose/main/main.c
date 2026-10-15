@@ -104,6 +104,14 @@ static bool json_get_int(const char* json, const char* key, int* out) {
     return false;
 }
 
+// static bool json_get_int_array(const char* json, const char* key, int* out, int count) {
+//     char* key_ptr;
+//     key_ptr = strstr(json, key);
+//     if(key_ptr != NULL) {
+
+//     }
+// }
+
 
 void app_main(void)
 {
@@ -163,6 +171,23 @@ void app_main(void)
             printf("status %s\n", status);
         }
 
+        // 칸별 담을 양 꺼내기: "amounts":[5,0,0,0,2,0,0,0] → amounts[0..7]
+        //   자리 0~3 = 가루 1~4번 칸 (g), 자리 4~7 = 알약 5~8번 칸 (알). 0 이면 그 칸은 건너뜀
+        //   start/finish 응답이 body 를 덮어쓰기 전에 꺼내 둬야 함
+        int amounts[8];
+        char* p = strstr(body, "amounts");
+        if (p != NULL) {
+            p = strchr(p, '[');
+            p = p + 1;                          
+            for (int i = 0; i < 8; i++) {       
+                amounts[i] = atoi(p);           
+                if (i < 7) {                    
+                    p = strchr(p, ',') + 1;    
+                }
+                printf("amount[%d] = %d\n", i, amounts[i]);
+            }
+        }
+
         // 2. 일감이 있을 때만 (id 를 찾았을 때만) 기계가 일함: start → 담기 → finish
         int id;
         if(json_get_int(body, "id", &id)){
@@ -179,7 +204,6 @@ void app_main(void)
                 http_request(HTTP_METHOD_POST, url, body, sizeof(body));
                 printf("body = %s\n", body);
             }
-           
         }
 
         vTaskDelay(200);   // 2초
