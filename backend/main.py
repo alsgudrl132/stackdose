@@ -96,10 +96,17 @@ def dispense_status(id:int):
 # requested 상태 중 가장 오래된 것(id 가장 작은 것) 하나. 일감이 없으면 null (에러 아님, 평범한 상황)
 @app.get("/device/next")
 def get_next_job():
-    res = fetch_all("SELECT * FROM dispenses WHERE status = 'requested' ORDER BY id LIMIT 1")
-    if res == []:
+    preset = fetch_all("SELECT * FROM dispenses WHERE status = 'requested' ORDER BY id LIMIT 1")
+    if preset == []:
         return None
-    return res[0]
+    res = fetch_all("SELECT * FROM preset_items WHERE preset = (?)", (preset[0]["preset"],))
+
+    amounts = [0] * 8
+    for item in res:
+        amounts[item["slot"]-1] = item["amount"]
+    job = dict(preset[0])
+    job["amounts"] = amounts
+    return job
 
 # 기계가 일감을 "내가 할게"라고 가져감: requested → running
 # 404 = 없는 요청, 409(Conflict) = 지금 상태에서는 시작할 수 없음 (이미 running 이거나 done)
