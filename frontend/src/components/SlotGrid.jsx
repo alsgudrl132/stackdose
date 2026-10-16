@@ -6,7 +6,7 @@ const LOW = { powder: 50, pill: 10 };
 const SCALE = 5;
 
 // 한 줄 전체가 버튼입니다 (빈 칸은 채우기, 찬 칸은 수정).
-function SlotRow({ slot }) {
+function SlotRow({ slot, selected, onSelect }) {
   const empty = !slot.supplement;
   const low = !empty && slot.remaining < LOW[slot.kind];
   const pct = empty
@@ -23,7 +23,9 @@ function SlotRow({ slot }) {
       <button
         type="button"
         aria-label={label}
-        className={`inv is-${slot.kind}${empty ? " inv--empty" : ""}${low ? " inv--low" : ""}`}
+        aria-pressed={selected}
+        onClick={() => onSelect(slot.no)}
+        className={`inv is-${slot.kind}${empty ? " inv--empty" : ""}${low ? " inv--low" : ""}${selected ? " inv--selected" : ""}`}
       >
         <span className="inv__no">{slot.no}</span>
         <span className="inv__name">
@@ -49,7 +51,7 @@ function SlotRow({ slot }) {
   );
 }
 
-export default function SlotGrid({ slots }) {
+export default function SlotGrid({ slots, selectedNo, onSelect }) {
   const groups = [
     { kind: "powder", title: "가루", sub: "Powder · g" },
     { kind: "pill", title: "알약", sub: "Pills · 알" },
@@ -81,7 +83,12 @@ export default function SlotGrid({ slots }) {
               {slots
                 .filter((s) => s.kind === g.kind)
                 .map((s) => (
-                  <SlotRow key={s.no} slot={s} />
+                  <SlotRow
+                    key={s.no}
+                    slot={s}
+                    selected={s.no === selectedNo}
+                    onSelect={onSelect}
+                  />
                 ))}
             </ul>
           </div>

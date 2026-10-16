@@ -107,6 +107,25 @@
   color: var(--muted);
 }
 
+/* 서버가 꺼졌을 때 위쪽 알림 */
+.banner {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  color: var(--warn);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 저장 · 요청 실패 이유 */
+.form-error {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warn);
+}
+
 /* ---------- 버튼 · 입력 ---------- */
 .btn {
   display: inline-flex;
@@ -127,6 +146,12 @@
 
 .btn:active {
   transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn--line {
@@ -319,6 +344,46 @@
   color: var(--run-muted);
 }
 
+.run__id {
+  margin-left: auto;
+  color: var(--run-muted);
+  letter-spacing: 0.06em;
+}
+
+.run__note {
+  padding-top: 14px;
+  font-size: 14px;
+  color: var(--run-muted);
+}
+
+.run__error {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--run-warn);
+}
+
+/* 담는 중인 것이 없을 때: 테두리만 남기고 조용하게 */
+.run--idle {
+  border-top-color: var(--run-line);
+}
+
+.run--idle .run__head {
+  grid-template-columns: 1fr;
+}
+
+.run--idle .run__eyebrow {
+  color: var(--run-muted);
+}
+
+.run--canceled {
+  border-top-color: var(--run-muted);
+}
+
+.run--canceled .run__eyebrow {
+  color: var(--run-muted);
+}
+
 .step {
   padding: 16px 0;
   border-bottom: 1px solid var(--run-line);
@@ -344,7 +409,8 @@
   font-weight: 800;
 }
 
-.step--waiting .step__no {
+.step--waiting .step__no,
+.step--canceled .step__no {
   background: none;
   box-shadow: inset 0 0 0 1.5px var(--run-line);
   color: var(--run-muted);
@@ -396,7 +462,8 @@
   letter-spacing: -0.01em;
 }
 
-.step--waiting .step__actual {
+.step--waiting .step__actual,
+.step--canceled .step__actual {
   color: var(--run-muted);
 }
 
@@ -417,7 +484,8 @@
   color: var(--k);
 }
 
-.step--waiting .step__pct {
+.step--waiting .step__pct,
+.step--canceled .step__pct {
   color: var(--run-muted);
 }
 
@@ -473,9 +541,13 @@
   color: var(--run-warn);
 }
 
-.btn--stop:hover {
+.btn--stop:hover:not(:disabled) {
   border-color: var(--run-warn);
   background: color-mix(in srgb, var(--run-warn) 10%, transparent);
+}
+
+.btn--stop:disabled {
+  color: var(--run-muted);
 }
 
 /* ---------- 프리셋 (스택) ---------- */
@@ -497,6 +569,11 @@
 
 .stack:hover {
   border-color: var(--line-strong);
+}
+
+.stack--editing,
+.stack--editing:hover {
+  border-color: var(--fg);
 }
 
 .stack__head {
@@ -574,7 +651,7 @@
   font-weight: 800;
 }
 
-.btn--go:hover {
+.btn--go:hover:not(:disabled) {
   background: color-mix(in srgb, var(--accent) 88%, #000);
 }
 
@@ -665,6 +742,12 @@
 
 .inv:focus-visible {
   outline-offset: -2px;
+}
+
+.inv--selected,
+.inv--selected:hover {
+  background: var(--surface-2);
+  box-shadow: inset 3px 0 0 var(--k);
 }
 
 .inv__no {
@@ -842,9 +925,13 @@
   color: var(--muted);
 }
 
-.btn--add:hover {
+.btn--add:hover:not(:disabled) {
   border-color: var(--fg);
   color: var(--fg);
+}
+
+.editor .note {
+  margin-top: 0;
 }
 
 .editor__actions {
