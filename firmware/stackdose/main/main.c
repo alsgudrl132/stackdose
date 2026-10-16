@@ -21,6 +21,12 @@
 #include "esp_http_client.h"
 #include <string.h>
 #include <stdbool.h>
+#include "board.h"      // 핀 배정 (wiring.md 와 같음)
+#include "scale.h"      // 저울 (HX711)
+#include "powder.h"     // 가루 모터 (DRV8833)
+#include "pill.h"       // 알약 원판 (MCP23017 + 28BYJ, 홀 센서)
+#include "dispense.h"   // 담기 로직 (위 셋을 조합)
+#include "rom/ets_sys.h" // esp_rom_delay_us: 마이크로초 단위로 기다리기
 
 // 스택도즈 기계 펌웨어 (ESP32, ESP-IDF)
 //   Wi-Fi에 붙은 뒤 서버(FastAPI)에 일감을 묻고, 있으면 start → (담기) → finish 를 보고함
@@ -104,17 +110,48 @@ static bool json_get_int(const char* json, const char* key, int* out) {
     return false;
 }
 
-// static bool json_get_int_array(const char* json, const char* key, int* out, int count) {
-//     char* key_ptr;
-//     key_ptr = strstr(json, key);
-//     if(key_ptr != NULL) {
+// 테스트: 28BYJ-48 (ULN2003) 을 ESP32 핀에 바로 꽂아서 알약 한 칸(1/3 바퀴)만큼 돌림 (2026-10-16 확인)
+//   실제 기계에서는 MCP23017 을 거쳐서 돌림 → 이 코드는 pill.c 의 pill_step() 으로 옮겨 갈 예정
+//   배선 (테스트용): IN1~IN4 = GPIO25, 26, 27, 13 / ULN2003 + = 5V, - = GND
+static void motor_test(void)
+{
+    // 반스텝 순서: 코일 하나 → 둘 → 하나 ... 8단계 (맨 오른쪽 비트 = IN1, 맨 왼쪽 = IN4)
+    static const uint8_t HALF_STEP[8] = { 0b0001, 0b0011, 0b0010, 0b0110, 0b0100, 0b1100, 0b1000, 0b1001 };
+    static const gpio_num_t MOTOR_PINS[4] = { GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_13 };   // IN1~IN4
+    gpio_reset_pin(MOTOR_PINS[0]);
+    gpio_reset_pin(MOTOR_PINS[1]);
+    gpio_reset_pin(MOTOR_PINS[2]);
+    gpio_reset_pin(MOTOR_PINS[3]);
 
-//     }
-// }
+    gpio_set_direction(MOTOR_PINS[0], GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_PINS[1], GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_PINS[2], GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_PINS[3], GPIO_MODE_OUTPUT);
 
+    for (int i = 0; i < 1365; i++) {              // 1365칸 ≈ 1/3 바퀴 = 알약 한 칸 (한 바퀴 약 4096칸)
+        uint8_t pattern = HALF_STEP[i % 8];       // 이번에 켤 모양 (8개를 계속 돌려 씀)
+        for (int j = 0; j < 4; j++) {             // 핀 4개를 하나씩
+            gpio_set_level(MOTOR_PINS[j], (pattern >> j) & 1);   // pattern 의 j번째 비트 = IN(j+1) 켤지
+        }
+        // 칸 사이 1.5ms (실측: 1500us 면 잘 돎. 더 짧으면 힘이 약해짐). 한 칸 약 2초
+        // vTaskDelay 는 최소 10ms(1틱)라 너무 느려서 바쁜 대기를 씀 → 5초 넘게 돌리면 감시견이 재부팅함
+        esp_rom_delay_us(1500);
+    }
+
+    for (int j = 0; j < 4; j++) {                 // 다 돌면 전부 끄기 (모터가 뜨거워지지 않게)
+        gpio_set_level(MOTOR_PINS[j], 0);
+    }
+}
 
 void app_main(void)
 {
+    motor_test();   // 테스트: 켤 때마다 한 번 돎. 다 쓰면 지우기
+
+    // 0. 기계 준비: Wi-Fi 보다 먼저 (켜지자마자 모터 핀을 LOW 로 잡아서 저절로 돌지 않게)
+    ESP_ERROR_CHECK(powder_init());
+    ESP_ERROR_CHECK(pill_init());
+    ESP_ERROR_CHECK(scale_init());
+
     ESP_ERROR_CHECK(
         nvs_flash_init()
     );
@@ -174,7 +211,7 @@ void app_main(void)
         // 칸별 담을 양 꺼내기: "amounts":[5,0,0,0,2,0,0,0] → amounts[0..7]
         //   자리 0~3 = 가루 1~4번 칸 (g), 자리 4~7 = 알약 5~8번 칸 (알). 0 이면 그 칸은 건너뜀
         //   start/finish 응답이 body 를 덮어쓰기 전에 꺼내 둬야 함
-        int amounts[8];
+        int amounts[SLOT_COUNT] = {0};   // 못 읽으면 전부 0 → 아무것도 안 담음
         char* p = strstr(body, "amounts");
         if (p != NULL) {
             p = strchr(p, '[');
@@ -198,8 +235,12 @@ void app_main(void)
             if(200 == http_request(HTTP_METHOD_POST, url, body, sizeof(body))){   // start 가 받아들여졌을 때만 (409: 이미 누가 가져감, -1: 연결 실패)
                 printf("body = %s\n", body);
 
-                vTaskDelay(300);   // 3초 (지금 설정은 1틱 = 10ms). 나중에 이 자리에 실제 담기(모터 · 저울)가 들어감
-                
+                // 실제 담기 (dispense.c). 지금은 부품이 없어서 가짜
+                // TODO: 실패하면 finish 대신 실패를 알려야 함 → 서버에 실패 보고 API 가 생기면 바꾸기
+                if (!dispense_job(amounts)) {
+                    printf("dispense failed\n");
+                }
+
                 snprintf(url, sizeof(url), "http://"WIFI_IP":8000/dispenses/%d/finish", id);
                 http_request(HTTP_METHOD_POST, url, body, sizeof(body));
                 printf("body = %s\n", body);
