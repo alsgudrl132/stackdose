@@ -16,3 +16,10 @@ docs/python-자료구조.md
 
 # Wi-Fi 이름·비밀번호 (펌웨어)
 firmware/stackdose/main/wifi_secret.h
+
+# KiCad 가 만드는 임시 · 개인 파일, DRC 보고서 (gen_pcb.py 로 다시 만들 수 있음)
+hardware/pcb/*-backups/
+hardware/pcb/*.kicad_prl
+hardware/pcb/fp-info-cache
+hardware/pcb/drc.rpt
+hardware/pcb/~*.lck
