@@ -418,7 +418,8 @@ A3144E 홀 센서(VLT-ML005)를 담았다면 빼라고 했습니다.
   4. `pill_init` → `pill_step` (I2C 로 모터 돌리기) → `hall_read_mv` 기준값 재기 → `pill_home`
   5. `dispense_pill` → `dispense_job`
 - 앱 공간이 14% 남음 → 더 키우기 전에 menuconfig 에서 플래시 4MB + 큰 앱 파티션으로 바꾸기
-- 서버에 "실패 보고" API 가 아직 없음 (지금은 실패해도 finish)
+- 담기 실패는 `POST /dispenses/{id}/fail` (running → failed)로 보고함. 화면에 빨간 Failed 로 보이고, 남은 양은 줄이지 않음
+- Wi-Fi 가 끊기면 핸들러가 바로 다시 연결함 (DISCONNECTED 이벤트)
 
 ---
 

@@ -189,7 +189,7 @@ def dispense_preset(no:int):   # no:int → 주소의 글자 "1"을 숫자 1로 
 # 주의: 이 경로는 /dispenses/{id} 보다 위에 있어야 함. 아래에 두면 "current" 를 id 로 읽으려다 422
 # steps 의 actual 은 아직 기계가 칸별로 보고하지 않아서, 끝났으면 목표량 · 아니면 0 으로 채움
 #   (나중에 기계가 저울 값을 보고하면 여기를 실제 값으로 바꿈)
-STEP_STATUS = {"requested": "waiting", "running": "running", "done": "done", "canceled": "canceled"}
+STEP_STATUS = {"requested": "waiting", "running": "running", "done": "done", "canceled": "canceled", "failed": "failed"}
 
 @app.get("/dispenses/current")
 def current_dispense():
@@ -319,6 +319,25 @@ def dispense_finish(id:int):
         return {"ok" : True, "id" : id, "status" : "done"}
     finally:
         cur.close()
+        conn.close()
+
+# 기계가 담다가 실패했다고 보고: running → failed (막힘 · 통 비었음 · 시간 초과 등)
+# 남은 양은 줄이지 않음 (얼마나 담겼는지 모름. 나중에 저울 값을 보고받으면 그만큼만 줄이기)
+# 404 = 없는 요청, 409 = running 이 아님
+@app.post("/dispenses/{id}/fail")
+def dispense_fail(id:int):
+    res = fetch_all("SELECT status FROM dispenses WHERE id = (?)", (id,))
+    if res == []:
+        raise HTTPException(404, detail=f"Id {id} not found")
+    conn = sqlite3.connect('stackdose.db')
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE dispenses SET status = 'failed' WHERE id = (?) AND status = 'running'", (id,))
+        if cur.rowcount == 0:
+            raise HTTPException(409, detail="Status is not running")
+        conn.commit()
+        return {"ok": True, "id": id, "status": "failed"}
+    finally:
         conn.close()
 
 # 화면의 "멈추기": 아직 기계가 가져가지 않은 요청만 취소할 수 있음 (requested → canceled)

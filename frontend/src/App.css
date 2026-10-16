@@ -380,6 +380,14 @@
   border-top-color: var(--run-muted);
 }
 
+.run--failed {
+  border-top-color: var(--run-warn);
+}
+
+.run--failed .run__eyebrow {
+  color: var(--run-warn);
+}
+
 .run--canceled .run__eyebrow {
   color: var(--run-muted);
 }

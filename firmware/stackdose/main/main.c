@@ -29,7 +29,7 @@
 #include "rom/ets_sys.h" // esp_rom_delay_us: 마이크로초 단위로 기다리기
 
 // 스택도즈 기계 펌웨어 (ESP32, ESP-IDF)
-//   Wi-Fi에 붙은 뒤 서버(FastAPI)에 일감을 묻고, 있으면 start → (담기) → finish 를 보고함
+//   Wi-Fi에 붙은 뒤 서버(FastAPI)에 일감을 묻고, 있으면 start → (담기) → finish 또는 fail 을 보고함
 //   backend/virtual_device.py 가 하던 일을 C로 옮기는 중
 
 // "IP 받음" 신호등 (FreeRTOS 이벤트 그룹). 핸들러가 BIT0 을 켜고, app_main 이 그걸 기다림
@@ -43,6 +43,11 @@ static void wifi_event_handler(void* args, esp_event_base_t base, int32_t id, vo
 {
     printf("event detected %" PRId32 "\n", id);
     if(base == WIFI_EVENT && id == WIFI_EVENT_STA_START) esp_wifi_connect();   // Wi-Fi 켜졌으면 → 공유기에 연결 시도
+    else if(base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {        // 끊겼거나 못 붙었으면 → 다시 연결 시도
+        // 핫스팟이 꺼졌다 켜지거나 처음 붙기를 실패해도 알아서 다시 붙음 (그동안 HTTP 요청은 -1 로 실패하고 다음 바퀴에 다시 함)
+        printf("wifi disconnected, retry\n");
+        esp_wifi_connect();
+    }
     else if(base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {                  // IP 받았으면 → 찍고 신호등 켜기
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) data;                 // data 를 "IP 정보" 타입으로 보고 꺼냄
         printf("got ip: " IPSTR "\n", IP2STR(&event->ip_info.ip));
@@ -236,12 +241,13 @@ void app_main(void)
                 printf("body = %s\n", body);
 
                 // 실제 담기 (dispense.c). 지금은 부품이 없어서 가짜
-                // TODO: 실패하면 finish 대신 실패를 알려야 함 → 서버에 실패 보고 API 가 생기면 바꾸기
-                if (!dispense_job(amounts)) {
+                // 끝나면 결과대로 보고: 성공 → finish (done), 실패 → fail (failed. 막힘 · 통 비었음 · 시간 초과 등)
+                bool ok = dispense_job(amounts);
+                if (!ok) {
                     printf("dispense failed\n");
                 }
 
-                snprintf(url, sizeof(url), "http://"WIFI_IP":8000/dispenses/%d/finish", id);
+                snprintf(url, sizeof(url), "http://"WIFI_IP":8000/dispenses/%d/%s", id, ok ? "finish" : "fail");
                 http_request(HTTP_METHOD_POST, url, body, sizeof(body));
                 printf("body = %s\n", body);
             }

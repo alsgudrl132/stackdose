@@ -16,6 +16,7 @@ const HEAD_TEXT = {
   running: 'Now dosing',
   done: 'Done',
   canceled: 'Canceled',
+  failed: 'Failed',
 }
 
 // 가루는 무게라 눈금 막대로, 알약은 한 알씩 떨어지니 칸으로 보여 줍니다.
@@ -108,6 +109,11 @@ export default function DispensePanel({ dispense, slots, onCancel }) {
 
       {dispense.status === 'requested' && (
         <p className="run__note">기계가 가져가기를 기다리는 중이에요.</p>
+      )}
+      {dispense.status === 'failed' && (
+        <p className="run__error" role="alert">
+          기계가 담다가 멈췄어요. 통이 비었거나 가루가 막혔는지 확인해 주세요.
+        </p>
       )}
 
       <ol className="run__steps">
