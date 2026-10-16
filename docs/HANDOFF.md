@@ -408,6 +408,18 @@ A3144E 홀 센서(VLT-ML005)를 담았다면 빼라고 했습니다.
 - 알약: 홀 센서로 원점 → 오프셋만큼 돌려 대기 위치 → 한 알마다 120°.
 - 쉬는 동안에는 ULN 네 핀을 모두 LOW로 둡니다 (발열 방지).
 
+**펌웨어 뼈대 (2026-10-15, `firmware/stackdose/main/`):** 사용자가 직접 채우기로 함. 함수 모양 · 핀 · TODO 힌트만 있음.
+- `board.h` 핀 배정 (wiring.md 와 같음) · `scale.c` HX711 · `powder.c` DRV8833 · `pill.c` MCP23017 + 28BYJ + 홀 센서 · `dispense.c` 담기 로직
+- 지금은 `dispense_*` 가 printf 로 "담는 척"만 함. 서버 연결 흐름은 이미 실제로 동작함
+- 부품이 오면 채우는 순서 (하나씩, 매번 실물로 확인):
+  1. `powder_set` 1단계 (켜고 끄기만): 모터 하나를 앞 · 뒤로 돌려 보기
+  2. `scale_read_raw` → `scale_tare` → 추로 `SCALE_COUNTS_PER_GRAM` 재기 → `scale_read_grams`
+  3. `dispense_powder`: 목표 무게에서 멈추기 (핵심)
+  4. `pill_init` → `pill_step` (I2C 로 모터 돌리기) → `hall_read_mv` 기준값 재기 → `pill_home`
+  5. `dispense_pill` → `dispense_job`
+- 앱 공간이 14% 남음 → 더 키우기 전에 menuconfig 에서 플래시 4MB + 큰 앱 파티션으로 바꾸기
+- 서버에 "실패 보고" API 가 아직 없음 (지금은 실패해도 finish)
+
 ---
 
 ## 10. 결정 기록 (왜 이렇게 했나)
