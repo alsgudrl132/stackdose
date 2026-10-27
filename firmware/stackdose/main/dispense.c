@@ -6,7 +6,7 @@
 #include "powder.h"
 #include "pill.h"
 
-// 지금은 부품이 없어서 "담는 척"(printf + 1초)만 함. 부품이 오면 TODO 를 채우기
+// 지금은 부품이 없어서 "담는 척"(printf + 1초)만 함. 부품이 오면 아래 빈 곳을 채우기
 // 이 파일이 이 기계의 핵심 로직 (면접에서 설명할 부분)
 
 bool dispense_powder(int slot, int grams)
@@ -14,7 +14,7 @@ bool dispense_powder(int slot, int grams)
     printf("[가짜] 가루 %d번 칸 %dg\n", slot, grams);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    // TODO (HANDOFF 9장 펌웨어 메모: 무게 폐루프)
+    // (HANDOFF 9장 펌웨어 메모: 무게 폐루프)
     // 1. scale_tare() → 지금 컵 무게를 0 으로
     // 2. powder_set(slot, 100) 으로 돌리면서 짧게(예: 100ms) 쉬며 scale_read_grams 를 반복해서 봄
     // 3. 목표 근처(예: 목표 - 1g)면 느리게 (powder_set(slot, 40)). 스크류가 멈춰도 떨어지는 가루가 있음
@@ -35,7 +35,6 @@ bool dispense_pill(int slot, int count)
     printf("[가짜] 알약 %d번 칸 %d알\n", slot, count);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    // TODO
     // 1. pill_home(slot) 로 원점 → 대기 위치 (실패하면 false)
     // 2. count 번: pill_step(slot, PILL_STEPS_PER_PILL) → 잠깐 기다림 (알약이 떨어질 시간)
     // 3. pill_release(slot)
@@ -46,12 +45,11 @@ bool dispense_pill(int slot, int count)
 
 bool dispense_job(const int amounts[SLOT_COUNT])
 {
-    // TODO
     // 1. i = 0 ~ SLOT_COUNT-1 돌면서 amounts[i] 가 0 이면 건너뜀
     // 2. 칸 번호 = i + 1. POWDER_FIRST~POWDER_LAST 면 dispense_powder, 아니면 dispense_pill
     // 3. 하나라도 false 면 바로 멈추고 false (나머지 칸은 담지 않음)
     (void)amounts;
-    printf("[가짜] dispense_job: TODO\n");
+    printf("[가짜] dispense_job: 아직 안 만듦\n");
     vTaskDelay(pdMS_TO_TICKS(3000));
     return true;
 }

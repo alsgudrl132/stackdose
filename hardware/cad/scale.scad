@@ -39,13 +39,13 @@ assert(m4_bite >= 5 && m4_bite < lc_h, "M4 길이 확인");
 module pedestal() {
     difference() {
         union() {
-            translate([lc_x0 - 4, -lc_w/2 - 4, 0]) cube([lc_holes[1] + 8, lc_w + 8, ped_h]);
+            translate([lc_x0 - 4, -lc_w/2 - 4, 0]) cube([lc_holes_fix[1] + 8, lc_w + 8, ped_h]);
             translate([lc_x0 + 4, -26, 0]) cube([16, 52, strip_h]);              // 고정 날개
             translate([lc_x0 - 4, -8, 0]) cube([lc_l + 8, 16, strip_h]);         // 멈춤대까지 띠
             translate([stop_x - 8, -22, 0]) cube([16, 44, strip_h]);             // 멈춤대 쪽 날개
             translate([stop_x - 4, -lc_w/2, 0]) cube([8, lc_w, lc_z0 - stop_gap]); // 멈춤대
         }
-        for (h = [lc_holes[0], lc_holes[1]]) translate([lc_x0 + h, 0, 0]) {
+        for (h = [lc_holes_fix[0], lc_holes_fix[1]]) translate([lc_x0 + h, 0, 0]) {
             translate([0, 0, -1]) cylinder(d = lc_fix_bolt_d, h = ped_h + 2);
             translate([0, 0, -0.01]) cylinder(d = lc_fix_head_d, h = lc_fix_head_h);   // 머리 (아래에서)
         }
@@ -58,7 +58,7 @@ module tray() {
         union() {
             translate([0, 0, tray_z0]) hull() {
                 translate([cupP[0], cupP[1], 0]) cylinder(d = tray_d, h = tray_t);
-                translate([lc_x1 - lc_holes[1] - 6, -8, 0]) cube([lc_holes[1] + 6, 16, tray_t]);
+                translate([lc_x1 - lc_holes_load[1] - 6, -8, 0]) cube([lc_holes_load[1] + 6, 16, tray_t]);
             }
             // 컵 받침 링: 링 꼭대기 높이에서의 컵 지름에 맞춤
             translate([cupP[0], cupP[1], cup_z0 - 0.01]) difference() {
@@ -66,7 +66,7 @@ module tray() {
                 translate([0, 0, -1]) cylinder(d = cup_d_at(ring_h) + 2*clear, h = ring_h + 2);
             }
         }
-        for (h = lc_holes) translate([lc_x1 - h, 0, tray_z0]) {
+        for (h = lc_holes_load) translate([lc_x1 - h, 0, tray_z0]) {
             translate([0, 0, -1]) cylinder(d = lc_load_bolt_d, h = tray_t + 2);
             translate([0, 0, tray_t - lc_load_head_h]) cylinder(d = lc_load_head_d, h = lc_load_head_h + 1);
         }
@@ -78,7 +78,7 @@ module spacer() {
 }
 
 module spacers_placed() {
-    for (h = lc_holes) translate([lc_x1 - h, 0, lc_z0 + lc_h]) spacer();
+    for (h = lc_holes_load) translate([lc_x1 - h, 0, lc_z0 + lc_h]) spacer();
 }
 
 module loadcell_ghost() {

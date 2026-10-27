@@ -26,7 +26,7 @@ static uint8_t s_gpio[2];                      // MCP 의 지금 핀 값 [A, B] 
 // MCP23017 레지스터 하나에 값 쓰기: [레지스터 주소, 값] 두 바이트를 보냄
 static esp_err_t mcp_write(uint8_t reg, uint8_t value)
 {
-    // TODO: uint8_t buf[2] = { reg, value }; i2c_master_transmit(s_mcp, buf, 2, 100)
+    // uint8_t buf[2] = { reg, value }; i2c_master_transmit(s_mcp, buf, 2, 100)
     (void)reg;
     (void)value;
     return ESP_ERR_NOT_SUPPORTED;
@@ -34,7 +34,6 @@ static esp_err_t mcp_write(uint8_t reg, uint8_t value)
 
 esp_err_t pill_init(void)
 {
-    // TODO
     // 1. I2C 버스: i2c_master_bus_config_t (i2c_port = I2C_NUM_0, sda/scl = PIN_I2C_SDA/SCL,
     //    clk_source = I2C_CLK_SRC_DEFAULT, flags.enable_internal_pullup = true) → i2c_new_master_bus
     // 2. 장치 추가: i2c_device_config_t (device_address = MCP23017_ADDR, scl_speed_hz = 100000)
@@ -53,7 +52,6 @@ esp_err_t pill_init(void)
 
 esp_err_t pill_step(int slot, int steps)
 {
-    // TODO
     // 1. 칸 → MCP 어디인지: 5번 = GPA0~3, 6번 = GPA4~7, 7번 = GPB0~3, 8번 = GPB4~7
     //    (어느 레지스터인지 + 아래 4비트인지 위 4비트인지)
     // 2. |steps| 번 반복: HALF_STEP 다음 칸(음수면 이전 칸)의 4비트를 그 자리에 넣고
@@ -70,14 +68,14 @@ esp_err_t pill_step(int slot, int steps)
 
 esp_err_t pill_release(int slot)
 {
-    // TODO: 그 칸의 4비트만 0 으로 → mcp_write
+    // 그 칸의 4비트만 0 으로 → mcp_write
     (void)slot;
     return ESP_ERR_NOT_SUPPORTED;
 }
 
 int hall_read_mv(int slot)
 {
-    // TODO: adc_oneshot_read(s_adc, HALL_CH[slot - PILL_FIRST], &raw)
+    // adc_oneshot_read(s_adc, HALL_CH[slot - PILL_FIRST], &raw)
     //       (mV 는 adc_cali_raw_to_voltage. 아니면 raw 그대로 돌려서 기준값을 raw 로 정해도 됨)
     (void)slot;
     return 0;
@@ -85,7 +83,6 @@ int hall_read_mv(int slot)
 
 esp_err_t pill_home(int slot)
 {
-    // TODO
     // 1. 먼저 자석이 없을 때 값(기준, 약 1650mV)을 알아 둠. 처음엔 손으로 원판을 돌리며 찍어 보고 정하기
     // 2. 몇 스텝씩 돌면서 hall_read_mv 가 기준에서 충분히(예: 300mV 넘게) 벗어나면 = 자석 위
     //    한 바퀴(PILL_STEPS_PER_REV)를 다 돌아도 못 찾으면 ESP_ERR_NOT_FOUND (자석 빠짐, 센서 선 빠짐)

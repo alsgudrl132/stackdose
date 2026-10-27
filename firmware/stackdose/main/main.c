@@ -118,7 +118,7 @@ static bool json_get_int(const char* json, const char* key, int* out) {
 // 테스트: 28BYJ-48 (ULN2003) 을 ESP32 핀에 바로 꽂아서 알약 한 칸(1/3 바퀴)만큼 돌림 (2026-10-16 확인)
 //   실제 기계에서는 MCP23017 을 거쳐서 돌림 → 이 코드는 pill.c 의 pill_step() 으로 옮겨 갈 예정
 //   배선 (테스트용): IN1~IN4 = GPIO25, 26, 27, 13 / ULN2003 + = 5V, - = GND
-static void motor_test(void)
+static void __attribute__((unused)) motor_test(void)   // 지금은 안 불러서 "안 쓰는 함수" 경고를 막음
 {
     // 반스텝 순서: 코일 하나 → 둘 → 하나 ... 8단계 (맨 오른쪽 비트 = IN1, 맨 왼쪽 = IN4)
     static const uint8_t HALF_STEP[8] = { 0b0001, 0b0011, 0b0010, 0b0110, 0b0100, 0b1100, 0b1000, 0b1001 };
@@ -150,10 +150,26 @@ static void motor_test(void)
 
 void app_main(void)
 {
-    motor_test();   // 테스트: 켤 때마다 한 번 돎. 다 쓰면 지우기
+    // motor_test();   // 28BYJ 직결 테스트 (끝남). 가루 모터 1번과 같은 GPIO25·26 을 써서 막아 둠
 
     // 0. 기계 준비: Wi-Fi 보다 먼저 (켜지자마자 모터 핀을 LOW 로 잡아서 저절로 돌지 않게)
     ESP_ERROR_CHECK(powder_init());
+
+    // 테스트: 가루 1번 모터 속도 비교 (앞으로 60% → 25% → 멈춤 → 뒤로 30%, 회사라 소리 작게). 확인 끝나면 지우기
+    printf("powder test: forward 60%%\n");   // printf 에서 % 를 찍으려면 %% 로 씀
+    powder_set(1, 60);
+    vTaskDelay(pdMS_TO_TICKS(2000));         // 2000ms 를 틱으로 바꿔서 기다림 (그동안 다른 일은 계속 돎)
+    printf("powder test: forward 25%%\n");
+    powder_set(1, 25);
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    powder_set(1, 0);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    printf("powder test: backward 30%%\n");
+    powder_set(1, -30);
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    powder_set(1, 0);
+    printf("powder test: done\n");
+
     ESP_ERROR_CHECK(pill_init());
     ESP_ERROR_CHECK(scale_init());
 

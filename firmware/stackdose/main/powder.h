@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "esp_err.h"
 
-// 핀 준비 (모터 핀 8개 출력 LOW, nFAULT 입력)
+// 핀 준비 (모터 핀 8개 출력 LOW)
 esp_err_t powder_init(void);
 
 // slot 번 칸(1~4) 모터를 speed 로 돌림
@@ -12,5 +12,5 @@ esp_err_t powder_init(void);
 //   ⚠ 전원 때문에 모터는 한 번에 하나만 돌림 (wiring.md "한 번에 하나만")
 void powder_set(int slot, int speed);
 
-// 드라이버 이상 (과전류 · 과열). 모터가 막혀서 전류가 크게 흐를 때도 켜짐
+// 드라이버 이상. 산 모듈에 nFAULT 핀이 없어서 항상 false (막힘은 무게로 판단)
 bool powder_fault(void);
